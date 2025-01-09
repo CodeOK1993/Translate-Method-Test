@@ -1,0 +1,34 @@
+using System;  
+using System.IO;  
+using System.Text.RegularExpressions;  
+
+class Program  
+{  
+    static void Main(string[] args)  
+    {  
+        string inputFilePath = "input.cs";  // Path to your input C# file  
+        string outputFilePath = "output.cs"; // Path to save the modified output  
+
+        // Read the content of the input file  
+        var code = File.ReadAllText(inputFilePath);  
+
+        // Regular expression to match TableOrderArray assignments  
+        // This regex looks for an assignment to TableOrderArray  
+        Regex tableOrderRegex = new Regex(@"(this\.TableOrderArray\s*=\s*new\s+ArrayList\s*[{(]\s*[^}]*?)(\s*\.Translate\(\)\s*[,]?\s*)", RegexOptions.Singleline);  
+
+        // Remove .Translate() calls only in the context of TableOrderArray assignments  
+        string modifiedCode = tableOrderRegex.Replace(code, match =>  
+        {  
+            // Group 1: The part before .Translate()  
+            // We need to remove the .Translate() from the matched string that is assigned to TableOrderArray  
+            string matchBeforeTranslate = match.Groups[1].Value;  
+            string cleanedMatch = Regex.Replace(matchBeforeTranslate, @"\.Translate\(\)", "");  
+            return cleanedMatch + " "; // Ensure to return as a proper assignment context  
+        });  
+
+        // Write the modified code to the output file  
+        File.WriteAllText(outputFilePath, modifiedCode);  
+
+        Console.WriteLine("Translation methods removed from TableOrderArray assignments.");  
+    }  
+}
